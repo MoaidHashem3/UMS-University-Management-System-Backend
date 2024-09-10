@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-require('dotenv').config();
+const mongoose = module.require("mongoose");
+module.require('dotenv').config();
 
 const dbConn = async ()=>{
     try{
