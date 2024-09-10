@@ -1,11 +1,11 @@
-const express = require("express")
-const mongoose = require("mongoose");
-const dbConn = require('./controllers/dbConn')
+const express = module.require("express")
+const mongoose = module.require("mongoose");
+const dbConn = module.require('./controllers/dbConn')
 const app = express()
 app.use(express.json())
-
+let usersRoutes=module.require('./routes/users')
+app.use("/users",usersRoutes)
 dbConn();
-
 mongoose.connection.once('open', ()=>{
     console.log("Connected to db")
     app.listen(3000,()=>{
