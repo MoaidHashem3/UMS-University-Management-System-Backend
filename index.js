@@ -4,7 +4,7 @@ const dbConn = module.require("./controllers/dbConn");
 const quizRoute = module.require("./routes/quizRoute");
 const app = express();
 app.use(express.json());
-let loginRoute = module.require("./routes/loginRoute");
+let loginRoute = module.require("./routes/userRoute");
 
 app.use(loginRoute);
 app.use(quizRoute);
