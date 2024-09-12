@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const questionSchema = new mongoose.Schema({
   questionText: { type: String, required: true },
-  options: [{ type: String, required: true }],  
-  correctAnswer: { type: Number, required: true },  
+  options: [{ type: String, required: true }],
+  correctAnswer: { type: Number, required: true },
 });
 
 const quizSchema = new mongoose.Schema({
@@ -15,11 +15,11 @@ const quizSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-quizSchema.pre('save', function(next) {
+quizSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Quiz = mongoose.model('Quiz', quizSchema);
+const Quiz = mongoose.model("Quiz", quizSchema);
 
 module.exports = Quiz;
