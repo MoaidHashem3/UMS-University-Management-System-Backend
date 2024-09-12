@@ -5,9 +5,11 @@ const quizRoute = module.require("./routes/quizRoute");
 const app = express();
 app.use(express.json());
 let loginRoute = module.require("./routes/userRoute");
+let courseRoutes = require("./routes/courseRoute");
 
 app.use(loginRoute);
 app.use(quizRoute);
+app.use("/courses", courseRoutes);
 
 dbConn();
 mongoose.connection.once("open", () => {
