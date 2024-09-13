@@ -1,6 +1,6 @@
 var jwt =module.require('jsonwebtoken');
 const bcrypt = module.require('bcrypt');
-const usermodel=module.require("../models/users.js")
+const usermodel=module.require("../models/usersModel")
 
 
 

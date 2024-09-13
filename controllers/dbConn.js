@@ -9,4 +9,4 @@ const dbConn = async ()=>{
     }
 }
 
-module.exports = dbConn;
+module.exports = dbConn;``
