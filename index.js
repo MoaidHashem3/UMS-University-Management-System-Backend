@@ -1,14 +1,14 @@
 const express = module.require("express");
 const mongoose = module.require("mongoose");
 const dbConn = module.require("./controllers/dbConn");
-const quizRoute = module.require("./routes/quizRoute");
 const app = express();
 app.use(express.json());
-let loginRoute = module.require("./routes/userRoute");
-let courseRoutes = require("./routes/courseRoute");
+let userRoute = module.require("./routes/userRoute.js");
+let quizRoute = module.require("./routes/quizRoute");
+let courseRoutes = module.require("./routes/courseRoute");
 
-app.use(loginRoute);
-app.use(quizRoute);
+app.use('/users',userRoute);
+app.use('quiz',quizRoute);
 app.use("/courses", courseRoutes);
 
 dbConn();
