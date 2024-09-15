@@ -1,3 +1,4 @@
+const upload = require('../Middlewares/uploadConfig');
 const express = module.require("express");
 const router = express.Router();
 const app = express();
@@ -5,11 +6,17 @@ const {
   getAllCourse,
   createCourse,
   updateCourse,
+  uploadImage,
+  uploadContent
 } = require("../controllers/handelCourse");
 
 app.use(express.json());
 router.get("/", getAllCourse);
 router.post("/", createCourse);
 router.put("/:id", updateCourse);
+router.post('/uploadCourseImage/:id',upload.single('image'),uploadImage);
+router.post('/uploadCourseContent/:id',upload.single('pdfFile'),uploadContent);
+
+
 
 module.exports = router;

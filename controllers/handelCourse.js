@@ -13,10 +13,13 @@ const getAllCourse = async (req, res) => {
 };
 
 const createCourse = async (req, res) => {
-  const Course = req.body;
+  const course = req.body;
   try {
-    const newCourse = await Course.create(Course);
-    res.status(201).json({ message: "Course created successfully" });
+
+    const newCourse = new Course(course)
+    const savedCourse = await newCourse.save();
+
+    res.status(201).json({ message: "Course created successfully", data: savedCourse });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -37,5 +40,34 @@ const updateCourse = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+const uploadImage = async (req, res) => {
+    
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).send('course not found');
 
-module.exports = { getAllCourse, createCourse, updateCourse };
+    course.image = req.file.path; 
+    await course.save();
+
+    res.send('Image uploaded and updated for course');
+  } catch (err) {
+      console.log(err)
+    res.status(500).send(err.message);
+  }
+};
+const uploadContent = async (req, res) => {
+    
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).send('course not found');
+
+    course.content = [...course.content, req.file.path];
+    await course.save();
+
+    res.send('Content uploaded and updated for course');
+  } catch (err) {
+      console.log(err)
+    res.status(500).send(err.message);
+  }
+};
+module.exports = { getAllCourse, createCourse, updateCourse,uploadImage,uploadContent };

@@ -25,12 +25,12 @@ newQuiz = async (req, res) => {
 
 // delete quiz
 
-deleteQuiz = async (req, res) => {
+deleteQuizById = async (req, res) => {
   try {
     let { id } = req.params
     deletedQuiz = await Quiz.findByIdAndDelete(id);
     if (!this.deleteQuiz)
-      return res.status(404).json({ message: "not found" })
+      return res.status(404).json({ message: "Quiz not found" })
     res.status(200).json({ message: 'Quiz deleted Successfully' })
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message })
@@ -38,12 +38,12 @@ deleteQuiz = async (req, res) => {
 }
 
 //delete quiz by id
-deleteQuizById = async (res) => {
+deleteQuiz = async (req, res) => {
   try {
     deletedQuizs = await Quiz.deleteMany({});
     if (!deletedQuizs)
-      return res.status(404).json({ message: "not found" })
-    res.status(200).json({ message: 'Quiz deleted Successfully' })
+      return res.status(404).json({ message: "No quizzes found to delete" })
+    res.status(200).json({ message: 'Quizzes deleted Successfully' })
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message })
   }
@@ -72,7 +72,7 @@ updateQuiz = async (req, res) => {
 
 // retrive quiz
 
-retriveQuizs = async (res) => {
+retriveQuizs = async (req, res) => {
   try {
     const retrivedQuizes = await Quiz.find()
     if (!retrivedQuizes)
@@ -91,8 +91,8 @@ retriveQuizById = async (req, res) => {
   try {
     const retrivedQuizById = await Quiz.findById(id);
     if (!retrivedQuizById)
-      return res.status(404).json({ message: "Quize not found" })
-    res.status(200).json({ message: "Quize retrives successfully", data: retrivedQuizes })
+      return res.status(404).json({ message: "Quiz not found" })
+    res.status(200).json({ message: "Quiz retrives successfully", data: retrivedQuizById })
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message })
   }
