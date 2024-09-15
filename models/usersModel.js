@@ -34,9 +34,8 @@ const userSchema = new mongoose.Schema({
         default: "Student"
 
     },
-    photo: {
-        type: String,
-        default: "default.jpg"
+    image: {
+        type: String
     },
     // For Students, store references to enrolled courses and attempted quizzes
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],

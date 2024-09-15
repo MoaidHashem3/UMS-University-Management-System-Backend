@@ -1,4 +1,6 @@
-const { getall, getByid, updateOne,createone,deleteOne,deleteall,login} = module.require("../controllers/handelUser");
+const upload = require('../Middlewares/uploadConfig');
+
+const { getall, getByid, updateOne,createone,deleteOne,deleteall,login,uploadImage} = module.require("../controllers/handelUser");
 
 const express = module.require('express')
 const router=express.Router();
@@ -12,4 +14,5 @@ router.patch('/:id',updateOne)
 router.delete('/:id',deleteOne)
 router.delete('/',auth,restrict("Admin"),deleteall)
 router.post('/login',login)
+router.post('/uploadUserImage/:id',upload.single('image'),uploadImage);
 module.exports=router;

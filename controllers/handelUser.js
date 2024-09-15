@@ -91,4 +91,19 @@ const login = async (req, res) => {
     let token = jwt.sign({ data: { email: user.email, id: user._id, role: user.role } }, process.env.secret, { expiresIn: "3h" })
     return res.json({ message: "success", token: token })
 }
-module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login }
+const uploadImage = async (req, res) => {
+    
+    try {
+      const user = await usermodel.findById(req.params.id);
+      if (!user) return res.status(404).send('User not found');
+
+      user.image = req.file.path; 
+      await user.save();
+  
+      res.send('Image uploaded and updated for user');
+    } catch (err) {
+        console.log(err)
+      res.status(500).send(err.message);
+    }
+  };
+module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage }
