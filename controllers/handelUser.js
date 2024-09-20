@@ -5,7 +5,7 @@ const usermodel = module.require("../models/usersModel")
 
 const getall = async (req, res) => {
     try {
-        let users = await usermodel.find()
+        let users = await usermodel.find().populate("quiz")
         const count = await usermodel.countDocuments({});
         res.json({ message: "all users", data: users, totaldocs: count })
     } catch (e) {
