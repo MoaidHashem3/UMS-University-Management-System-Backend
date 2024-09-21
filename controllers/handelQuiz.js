@@ -114,7 +114,9 @@ const submitQuiz = async (req, res) => {
   try {
     const quiz = await Quiz.findById(quizId);
     const student = await User.findById(studentId);
-
+    if(student.role=="Admin"||student.role=="Instructor"){
+      return res.status(404).json({ message: "Admins and instructors can't answer quizzes" });
+    }
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found" });
     }
