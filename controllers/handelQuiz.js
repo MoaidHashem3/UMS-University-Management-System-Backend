@@ -34,7 +34,7 @@ deleteQuizById = async (req, res) => {
   try {
     let { id } = req.params;
     deletedQuiz = await Quiz.findByIdAndDelete(id);
-    if (!this.deleteQuiz)
+    if (!deleteQuiz)
       return res.status(404).json({ message: "Quiz not found" });
     res.status(200).json({ message: "Quiz deleted Successfully" });
   } catch (error) {
