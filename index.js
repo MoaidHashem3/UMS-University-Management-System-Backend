@@ -3,7 +3,10 @@ const mongoose = module.require("mongoose");
 const dbConn = module.require("./controllers/dbConn");
 
 const app = express();
+const cors = require('cors');
+app.use(cors());
 app.use(express.json());
+
 
 
 let userRoute = module.require("./routes/userRoute.js");

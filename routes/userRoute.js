@@ -8,7 +8,7 @@ const app = express();
 const {auth,restrict}=module.require('../Middlewares/auth')
 app.use(express.json())
 router.get('/',auth,restrict("Admin"),getall)
-router.post('/',createone)
+router.post('/register', upload.single('image'), createone);
 router.get('/:id',getByid)
 router.patch('/:id',updateOne)
 router.delete('/:id',deleteOne)
