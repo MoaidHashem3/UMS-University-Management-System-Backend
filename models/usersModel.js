@@ -11,10 +11,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trum: true,
+    trim: true,
     validate: {
       validator: function (val) {
-        return /^[a-zA-Z]{3,8}@(gmail|outlook)(.com)$/.test(val);
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
       },
       message: () => `invaild mail or password`,
     },

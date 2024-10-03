@@ -43,15 +43,21 @@ const updateOne = async (req, res) => {
         res.json({ message: "not updated", error: e.message })
     }
 }
-const createone = (req,res)=>{
-    let newuser=req.body
-    let inserteduser=usermodel.create(newuser).then(()=>{
-        res.json({message:"created",data:newuser})
-    }).catch((err)=>{
-        res.json({message:"can not be created",error:err.message})
-    })
-    
-}
+const createone = async (req, res) => {
+    try {
+      let newuser = req.body;
+  
+      if (req.file) {
+        newuser.image = req.file.path;
+      }
+  
+      let inserteduser = await usermodel.create(newuser);
+      res.json({ message: "created", data: inserteduser });
+    } catch (err) {
+      res.json({ message: "cannot be created", error: err.message });
+    }
+  };
+
 const deleteOne =async (req, res) => {
     try {
         let { id } = req.params;
