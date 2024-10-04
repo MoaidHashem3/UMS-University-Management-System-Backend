@@ -81,22 +81,42 @@ const deleteall = async (req, res) => {
 
 }
 const login = async (req, res) => {
-    let { email, password } = req.body;
-    if (!email || !password) {
-        return res.json({ message: "required" })
-    }
-    let user = await usermodel.findOne({ email: email })
-    if (!user) {
-        return res.json({ message: "invalid email or password" })
-    }
-    let isvalid = await bcrypt.compare(password, user.password)
-    if (!isvalid) {
-        return res.json({ message: "invalid email or password " })
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
     }
-    let token = jwt.sign({ data: { email: user.email, id: user._id, role: user.role } }, process.env.secret, { expiresIn: "3h" })
-    return res.json({ message: "success", token: token })
-}
+
+    try {
+        const user = await usermodel.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // Sign token with user data
+        const token = jwt.sign(
+            { data: { email: user.email, id: user._id, role: user.role } },
+            process.env.secret,
+            { expiresIn: "3h" }
+        );
+
+        // Return token and user data
+        return res.status(200).json({
+            message: "success",
+            token,
+            user: {name:user.name, email: user.email, id: user._id, role: user.role } 
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Server error, please try again later" });
+    }
+};
+
+
 const uploadImage = async (req, res) => {
     
     try {
