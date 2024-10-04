@@ -100,7 +100,7 @@ const login = async (req, res) => {
 
         // Sign token with user data
         const token = jwt.sign(
-            { data: { email: user.email, id: user._id, role: user.role } },
+            { data: {name:user.name, email: user.email, id: user._id, role: user.role } },
             process.env.secret,
             { expiresIn: "3h" }
         );
@@ -109,7 +109,14 @@ const login = async (req, res) => {
         return res.status(200).json({
             message: "success",
             token,
-            user: {name:user.name, email: user.email, id: user._id, role: user.role } 
+            user: {  id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                image: user.image,
+                enrolledCourses: user.enrolledCourses, 
+                createdCourses: user.createdCourses, 
+                quizzes: user.quizzes }
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error, please try again later" });

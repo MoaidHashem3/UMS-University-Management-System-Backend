@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trum: true,
+    trim: true,
   },
   email: {
     type: String,
@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["Student", "Admin", "Instructor"],
-    default: "Student",
+    enum: ["student", "admin", "professor"],
+    default: "student",
   },
   image: {
     type: String,
