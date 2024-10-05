@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb){
         let uploadPath = 'uploads/';
 
-        if (req.path.includes('/uploadUserImage')) {
+        if (req.path.includes('/uploadUserImage') || req.path.includes('/register')) {
             uploadPath = 'uploads/user_images/';
         } else if (req.path.includes('/uploadCourseImage')) {
             uploadPath = 'uploads/course_images/';

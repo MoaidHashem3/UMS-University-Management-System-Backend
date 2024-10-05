@@ -3,7 +3,10 @@ const mongoose = module.require("mongoose");
 const dbConn = module.require("./controllers/dbConn");
 
 const app = express();
+const cors = require('cors');
+app.use(cors());
 app.use(express.json());
+
 
 
 let userRoute = module.require("./routes/userRoute.js");
@@ -19,6 +22,6 @@ dbConn();
 mongoose.connection.once("open", () => {
   console.log("Connected to db");
   app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port 3000 ${process.env.PORT}`);
+    console.log(`Server is running on port ${process.env.PORT}`);
   });
 });

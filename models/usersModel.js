@@ -5,16 +5,16 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trum: true,
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    trum: true,
+    trim: true,
     validate: {
       validator: function (val) {
-        return /^[a-zA-Z]{3,8}@(gmail|outlook)(.com)$/.test(val);
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
       },
       message: () => `invaild mail or password`,
     },
@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["Student", "Admin", "Instructor"],
-    default: "Student",
+    enum: ["student", "admin", "professor"],
+    default: "student",
   },
   image: {
     type: String,
