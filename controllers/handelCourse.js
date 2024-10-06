@@ -15,7 +15,7 @@ const getAllCourse = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate("quiz").populate("students");
+    const course = await Course.findById(req.params.id).populate("quiz").populate("students").populate("image");
     if (!course) {
       return res.status(404).json({ message: "No Course Found!" });
     }
@@ -28,6 +28,9 @@ const getCourseById = async (req, res) => {
 const createCourse = async (req, res) => {
   const course = req.body;
   try {
+    if(req.file){
+      course.image=req.file.path;
+    }
     const newCourse = new Course(course);
     const savedCourse = await newCourse.save();
 

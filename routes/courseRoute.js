@@ -17,7 +17,7 @@ const {
 app.use(express.json());
 router.get("/", getAllCourse);
 router.get("/:id", getCourseById);
-router.post("/", createCourse);
+router.post("/", upload.single('image'),createCourse);
 router.put("/:id", updateCourse);
 router.post("/enroll/:courseId/:studentId", enrollInCourse);
 router.post('/uploadCourseImage/:id',upload.single('image'),uploadImage);
