@@ -28,6 +28,9 @@ const getCourseById = async (req, res) => {
 const createCourse = async (req, res) => {
   const course = req.body;
   try {
+    if(req.file){
+      course.image=req.file.path;
+    }
     const newCourse = new Course(course);
     const savedCourse = await newCourse.save();
 
