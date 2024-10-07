@@ -110,60 +110,55 @@ retriveQuizById = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
   const { studentId, quizId } = req.params;
-  const { answers } = req.body; // the answer array of index choices from student "answers" =  [1,0,4,3,1]
+  const { answers } = req.body;
+
   try {
-    const quiz = await Quiz.findById(quizId);
-    const student = await User.findById(studentId);
-    if(student.role=="Admin"||student.role=="Instructor"){
-      return res.status(404).json({ message: "Admins and instructors can't answer quizzes" });
-    }
-    if (!quiz) {
-      return res.status(404).json({ message: "Quiz not found" });
-    }
+      const quiz = await Quiz.findById(quizId);
+      const student = await User.findById(studentId);
 
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    for (let i = 0; i < student.quizzes.length; i++) {
-      if (student.quizzes[i].quizId == quizId) {
-        return res
-          .status(400)
-          .json({ message: "Student has already submitted this quiz" });
+      if (!student) {
+          return res.status(404).json({ message: "Student not found" });
       }
-    }
 
-    let totalScore = 0,
-      correctCount = 0,
-      incorrectCount = 0;
-
-    quiz.questions.forEach((question, index) => {
-      
-      const correctAnswer = question.correctAnswer; // [1] 
-      const studentAnswer = answers[index]; // index of student answer in question array [2,1,3,4]
-
-      if (correctAnswer === studentAnswer) {
-        totalScore += question.score;
-        correctCount++;
-      } else {
-        incorrectCount++;
+      if (student.role.toLowerCase() === "admin" || student.role.toLowerCase() === "professor") {
+          return res.status(403).json({ message: "Admins and instructors can't answer quizzes" });
       }
-    });
 
-    // Add the student's score to the quiz's totalScore
-    student.quizzes.push({ quizId, totalScore, correctCount });
-    await student.save();
+      if (!quiz) {
+          return res.status(404).json({ message: "Quiz not found" });
+      }
 
-    res.status(200).json({
-      message: "Quiz submitted successfully",
-      totalScore,
-      correctCount,
-      incorrectCount,
-    });
+      const hasAlreadySubmitted = student.quizzes.some(q => q.quizId === quizId);
+      if (hasAlreadySubmitted) {
+          return res.status(412).json({ message: "Student has already submitted this quiz" });
+      }
+
+      let totalScore = 0, correctCount = 0;
+
+      quiz.questions.forEach((question, index) => {
+          const correctAnswer = question.correctAnswer;
+          const studentAnswer = answers[index];
+
+          if (correctAnswer === studentAnswer) {
+              totalScore += question.score;
+              correctCount++;
+          }
+      });
+
+      student.quizzes.push({ quizId, totalScore, correctCount });
+      await student.save();
+
+      res.status(200).json({
+          message: "Quiz submitted successfully",
+          totalScore,
+          correctCount,
+      });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      console.error("Error in submitQuiz:", error); // Log the error
+      res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   newQuiz,
