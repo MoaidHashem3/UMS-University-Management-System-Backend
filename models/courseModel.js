@@ -29,13 +29,13 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
 
-  quiz: [
+  quizzes: [ 
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Quiz",
     },
   ],
-
+  
   image: {
     type: String,
   },
