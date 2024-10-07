@@ -3,7 +3,7 @@ const User = require("../models/usersModel");
 
 newQuiz = async (req, res) => {
   try {
-    const { title, description, questions, timeLimit } = req.body;
+    const { course, title, description, questions, timeLimit } = req.body;
 
     if (!title || !questions || questions.length === 0) {
       return res
@@ -12,6 +12,7 @@ newQuiz = async (req, res) => {
     }
 
     const newQuiz = new Quiz({
+      course,
       title,
       description,
       questions,
