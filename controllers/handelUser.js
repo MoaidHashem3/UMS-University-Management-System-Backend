@@ -35,8 +35,13 @@ const getByid = async (req, res) => {
 const updateOne = async (req, res) => {
     try {
         let { id } = req.params;
-        let newupdate = req.body;
-        let updatedtuser = await usermodel.findByIdAndUpdate(id, newupdate , { new: true });
+        let {password,...newupdate} = req.body;
+        const updatedata={...newupdate}
+        if(password){
+            const hashedPassword = await bcrypt.hash(password, 10); // Hash the new password
+            updatedata.password = hashedPassword;
+        }
+        let updatedtuser = await usermodel.findByIdAndUpdate(id, updatedata , { new: true });
         res.json({ message: "updated", data: updatedtuser })
 
     } catch (e) {
