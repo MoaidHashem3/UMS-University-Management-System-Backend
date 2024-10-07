@@ -100,7 +100,10 @@ const login = async (req, res) => {
 
         // Sign token with user data
         const token = jwt.sign(
-            { data: {name:user.name, email: user.email, id: user._id, role: user.role } },
+            { data: {name:user.name, email: user.email, id: user._id, role: user.role, image: user.image,
+                enrolledCourses: user.enrolledCourses, 
+                createdCourses: user.createdCourses, 
+                quizzes: user.quizzes } },
             process.env.secret,
             { expiresIn: "3h" }
         );
