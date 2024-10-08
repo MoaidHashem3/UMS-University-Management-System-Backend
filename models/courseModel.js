@@ -29,20 +29,21 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
 
-  quiz: [
+  quizzes: [ 
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Quiz",
     },
   ],
-
+  
   image: {
     type: String,
   },
 
-  content: [
+ content: [
     {
-      type: String,
+      title: { type: String, required: true }, 
+      filePath: { type: String, required: true }, 
     },
   ],
 

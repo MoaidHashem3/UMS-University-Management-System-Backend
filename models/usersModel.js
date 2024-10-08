@@ -46,10 +46,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
-  let salt = await bcrypt.genSalt(10);
-  let hashpassword = await bcrypt.hash(this.password, salt);
-  this.password = hashpassword;
-
+  if (this.isModified("password")) {
+      let salt = await bcrypt.genSalt(10);
+      let hashpassword = await bcrypt.hash(this.password, salt);
+      this.password = hashpassword;
+  }
   next();
 });
 

@@ -3,7 +3,7 @@ const User = require("../models/usersModel");
 
 const getAllCourse = async (req, res) => {
   try {
-    const courses = await Course.find().populate("quiz").populate("students");
+    const courses = await Course.find().populate("quizzes").populate("students");
     if (courses.length == 0) {
       return res.status(404).json({ message: "No Courses Found!" });
     }
@@ -15,15 +15,29 @@ const getAllCourse = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate("quiz").populate("students");
+    const course = await Course.findById(req.params.id)
+      .populate("quizzes")
+      .populate("students");
+
     if (!course) {
       return res.status(404).json({ message: "No Course Found!" });
     }
-    res.status(200).json(course);
+    const imageUrl = `${req.protocol}://${req.get('host')}/${course.image}`;
+    const contentWithFullPaths = course.content.map(item => ({
+      title: item.title, 
+      filePath: `${req.protocol}://${req.get('host')}/${item.filePath.replace(/\\/g, "/")}`,
+    }));
+
+    res.status(200).json({
+      ...course.toObject(),
+      imageUrl,
+      content: contentWithFullPaths, 
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 const createCourse = async (req, res) => {
   const course = req.body;
@@ -59,12 +73,16 @@ const updateCourse = async (req, res) => {
 const uploadImage = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("course not found");
+    if (!course) return res.status(404).send("Course not found");
 
-    course.image = req.file.path;
+    const imagePath = req.file.path.replace(/\\/g, "/"); 
+
+    course.image = imagePath;
     await course.save();
 
-    res.send("Image uploaded and updated for course");
+    const imageUrl = `${req.protocol}://${req.get('host')}/${imagePath}`;
+
+    res.status(200).json({ message: "Image uploaded successfully", imageUrl });
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
@@ -74,17 +92,29 @@ const uploadImage = async (req, res) => {
 const uploadContent = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("course not found");
+    if (!course) return res.status(404).send("Course not found");
 
-    course.content = [...course.content, req.file.path];
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).send("Title is required");
+    }
+
+    const contentItem = {
+      title,
+      filePath: req.file.path.replace(/\\/g, "/"),
+    };
+
+    course.content.push(contentItem);
     await course.save();
 
-    res.send("Content uploaded and updated for course");
+    res.status(200).send("Content uploaded and updated for course");
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
   }
 };
+
 
 const deleteCourseById = async (req, res) => {
   try {
