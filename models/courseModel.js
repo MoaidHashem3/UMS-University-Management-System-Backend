@@ -40,9 +40,10 @@ const courseSchema = new mongoose.Schema({
     type: String,
   },
 
-  content: [
+ content: [
     {
-      type: String,
+      title: { type: String, required: true }, 
+      filePath: { type: String, required: true }, 
     },
   ],
 
