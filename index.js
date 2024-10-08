@@ -1,11 +1,14 @@
 const express = module.require("express");
 const mongoose = module.require("mongoose");
 const dbConn = module.require("./controllers/dbConn");
+const path = require('path');
 
 const app = express();
 const cors = require('cors');
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 
