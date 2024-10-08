@@ -42,29 +42,42 @@ const getCourseById = async (req, res) => {
 const createCourse = async (req, res) => {
   const course = req.body;
   try {
-    if(req.file){
-      course.image=req.file.path;
+    if (req.file) {
+      course.image = req.file.path;
     }
+
     const newCourse = new Course(course);
     const savedCourse = await newCourse.save();
 
+    await User.findByIdAndUpdate(
+      course.professor, 
+      { $push: { createdCourses: savedCourse._id} }, 
+      { new: true } 
+    );
+
     res.status(201).json({ message: "Course created successfully", data: savedCourse });
   } catch (err) {
+    console.error("Error creating course:", err); 
     res.status(400).json({ message: err.message });
   }
 };
 
 const updateCourse = async (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
+  const { quizId } = req.body; 
+  console.log(id, quizId)
   try {
-    const updatedCourse = await Course.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
+    const updatedCourse = await Course.findByIdAndUpdate(
+      id,
+      { $push: { quizzes: quizId } }, // Adds the quizId to the quizzes array
+      { new: true } // Return the updated document
+    );
+
     if (!updatedCourse) {
       return res.status(404).json({ message: "Course not found" });
     }
-    res.status(200).json({ message: "Course updated successfully" });
+
+    res.status(200).json({ message: "Course updated successfully", updatedCourse });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
