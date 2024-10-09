@@ -21,7 +21,9 @@ const getCourseById = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: "No Course Found!" });
     }
-    res.status(200).json(course);
+    const enrolledStudentsCount = course.students.length;
+
+    res.status(200).json({ course, enrolledStudentsCount });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -105,41 +107,45 @@ const deleteAllCourse = async (req, res) => {
     if (deletedCourses.deletedCount === 0) {
       return res.status(404).json({ message: "No courses found to delete" });
     }
-    res.status(200).json({ message: `${deletedCourses.deletedCount} courses deleted successfully` });
+    res.status(200).json({
+      message: `${deletedCourses.deletedCount} courses deleted successfully`,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-const enrollInCourse = async (req, res)=>{
+const enrollInCourse = async (req, res) => {
   const { courseId, studentId } = req.params;
-  try{
+  try {
     const course = await Course.findById(courseId);
     const student = await User.findById(studentId);
 
-    if(!course || !student){
+    if (!course || !student) {
       return res.status(404).json({ message: "Course or student not found" });
     }
 
-    if(course.students.includes(studentId)){
-      return res.status(400).json({ message: "Student is already enrolled in this course" });
+    if (course.students.includes(studentId)) {
+      return res
+        .status(400)
+        .json({ message: "Student is already enrolled in this course" });
     }
 
     // Enroll the student in the course
     course.students.push(studentId);
     await course.save();
-    
+
     // Add the course to the student's enrolled courses
     student.enrolledCourses.push(courseId);
     await student.save();
-    
-    res.status(200).json({ message: "Student enrolled successfully in the course" });
 
-  }catch(error){
+    res
+      .status(200)
+      .json({ message: "Student enrolled successfully in the course" });
+  } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
-
+};
 
 module.exports = {
   getAllCourse,
