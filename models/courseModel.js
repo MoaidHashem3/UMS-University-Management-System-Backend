@@ -14,9 +14,9 @@ const courseSchema = new mongoose.Schema({
     trim: true,
   },
   professor: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
-    trim: true,
   },
   major: {
     type: String,

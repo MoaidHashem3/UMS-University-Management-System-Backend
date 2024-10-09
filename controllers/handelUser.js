@@ -85,7 +85,22 @@ const deleteall = async (req, res) => {
     }
 
 }
-const login = async (req, res) => {
+const getAllProfessors = async (req,res) => {
+    try {
+        const professors = await usermodel.find({ role: "professor" }).select("name email createdCourses");
+        if (professors) {
+            res.status(200).json({ message: "all professors", data: professors });
+
+        } else {
+            res.status(404).json({ message: 'can not be fouund' })
+        }
+
+      } catch (e) {
+        res.json({ message: e.message })
+      }
+  };
+
+  const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -93,7 +108,8 @@ const login = async (req, res) => {
     }
 
     try {
-        const user = await usermodel.findOne({ email });
+        const user = await usermodel.findOne({ email }).populate('createdCourses', 'title');
+     
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -103,12 +119,19 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // Sign token with user data
         const token = jwt.sign(
-            { data: {name:user.name, email: user.email, id: user._id, role: user.role, image: user.image,
-                enrolledCourses: user.enrolledCourses, 
-                createdCourses: user.createdCourses, 
-                quizzes: user.quizzes } },
+            {
+                data: {
+                    name: user.name,
+                    email: user.email,
+                    id: user._id,
+                    role: user.role,
+                    image: user.image,
+                    enrolledCourses: user.enrolledCourses,
+                    createdCourses: user.createdCourses, 
+                    quizzes: user.quizzes
+                }
+            },
             process.env.secret,
             { expiresIn: "3h" }
         );
@@ -117,19 +140,22 @@ const login = async (req, res) => {
         return res.status(200).json({
             message: "success",
             token,
-            user: {  id: user._id,
+            user: {
+                id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
                 image: user.image,
-                enrolledCourses: user.enrolledCourses, 
+                enrolledCourses: user.enrolledCourses,
                 createdCourses: user.createdCourses, 
-                quizzes: user.quizzes }
+                quizzes: user.quizzes
+            }
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error, please try again later" });
     }
 };
+
 
 
 const uploadImage = async (req, res) => {
@@ -147,4 +173,4 @@ const uploadImage = async (req, res) => {
       res.status(500).send(err.message);
     }
   };
-module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage }
+module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors }

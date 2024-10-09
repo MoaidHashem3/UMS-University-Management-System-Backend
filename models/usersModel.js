@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema({
   enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
 
   // For Instructors, store references to created courses and quizzes
-  createdCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-
+  createdCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  
   quizzes: [
     {
       quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
