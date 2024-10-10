@@ -1,160 +1,161 @@
-const Course = require("../models/courseModel");
-const User = require("../models/usersModel");
+var jwt = module.require("jsonwebtoken");
+const bcrypt = module.require("bcrypt");
+const usermodel = module.require("../models/usersModel");
 
-const getAllCourse = async (req, res) => {
+const getall = async (req, res) => {
   try {
-    const courses = await Course.find().populate("quiz").populate("students");
-    if (courses.length == 0) {
-      return res.status(404).json({ message: "No Courses Found!" });
+    let users = await usermodel.find().populate("quizzes");
+    const count = await usermodel.countDocuments({});
+    res.json({ message: "all users", data: users, totaldocs: count });
+  } catch (e) {
+    res.json({ message: e.message });
+  }
+};
+
+const getByid = async (req, res) => {
+  try {
+    let { id } = req.params;
+    let user = await usermodel.findById(id);
+    if (user) {
+      res.status(200).json({ data: user });
+    } else {
+      res.status(400).json({ message: "can not be fouund" });
     }
-    res.status(200).json(courses);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
-
-const getCourseById = async (req, res) => {
+const updateOne = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id)
-      .populate("quiz")
-      .populate("students");
-    if (!course) {
-      return res.status(404).json({ message: "No Course Found!" });
+    let { id } = req.params;
+    let { password, ...newupdate } = req.body;
+    const updatedata = { ...newupdate };
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10); // Hash the new password
+      updatedata.password = hashedPassword;
     }
-    const enrolledStudentsCount = course.students.length;
-
-    res.status(200).json({ course, enrolledStudentsCount });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-const createCourse = async (req, res) => {
-  const course = req.body;
-  try {
-    const newCourse = new Course(course);
-    const savedCourse = await newCourse.save();
-
-    res
-      .status(201)
-      .json({ message: "Course created successfully", data: savedCourse });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-const updateCourse = async (req, res) => {
-  const { id } = req.params;
-  const updates = req.body;
-  try {
-    const updatedCourse = await Course.findByIdAndUpdate(id, updates, {
+    let updatedtuser = await usermodel.findByIdAndUpdate(id, updatedata, {
       new: true,
     });
-    if (!updatedCourse) {
-      return res.status(404).json({ message: "Course not found" });
+    res.json({ message: "updated", data: updatedtuser });
+  } catch (e) {
+    res.json({ message: "not updated", error: e.message });
+  }
+};
+const createone = async (req, res) => {
+  try {
+    let newuser = req.body;
+
+    if (req.file) {
+      newuser.image = req.file.path;
     }
-    res.status(200).json({ message: "Course updated successfully" });
+
+    let inserteduser = await usermodel.create(newuser);
+    res.json({ message: "created", data: inserteduser });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.json({ message: "cannot be created", error: err.message });
+  }
+};
+
+const deleteOne = async (req, res) => {
+  try {
+    let { id } = req.params;
+
+    let user = usermodel.findById(id);
+    await user.deleteOne();
+
+    res.json({ message: "deleted" });
+  } catch (e) {
+    res.json({ message: e.message });
+  }
+};
+const deleteall = async (req, res) => {
+  try {
+    await usermodel.deleteMany({});
+    res.json({ message: "all users are deleted" });
+  } catch (e) {
+    res.json({ message: e.message });
+  }
+};
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    const user = await usermodel.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Sign token with user data
+    const token = jwt.sign(
+      {
+        data: {
+          name: user.name,
+          email: user.email,
+          id: user._id,
+          role: user.role,
+          image: user.image,
+          enrolledCourses: user.enrolledCourses,
+          createdCourses: user.createdCourses,
+          quizzes: user.quizzes,
+        },
+      },
+      process.env.secret,
+      { expiresIn: "3h" }
+    );
+
+    // Return token and user data
+    return res.status(200).json({
+      message: "success",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+        enrolledCourses: user.enrolledCourses,
+        createdCourses: user.createdCourses,
+        quizzes: user.quizzes,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error, please try again later" });
   }
 };
 
 const uploadImage = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("course not found");
+    const user = await usermodel.findById(req.params.id);
+    if (!user) return res.status(404).send("User not found");
 
-    course.image = req.file.path;
-    await course.save();
+    user.image = req.file.path;
+    await user.save();
 
-    res.send("Image uploaded and updated for course");
+    res.send("Image uploaded and updated for user");
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
   }
 };
-
-const uploadContent = async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("course not found");
-
-    course.content = [...course.content, req.file.path];
-    await course.save();
-
-    res.send("Content uploaded and updated for course");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err.message);
-  }
-};
-
-const deleteCourseById = async (req, res) => {
-  try {
-    const deletedCourse = await Course.findByIdAndDelete(req.params.id);
-    if (!deletedCourse) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-    res.status(200).json({ message: "Course deleted successfully" });
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
-
-const deleteAllCourse = async (req, res) => {
-  try {
-    const deletedCourses = await Course.deleteMany();
-    if (deletedCourses.deletedCount === 0) {
-      return res.status(404).json({ message: "No courses found to delete" });
-    }
-    res.status(200).json({
-      message: `${deletedCourses.deletedCount} courses deleted successfully`,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-const enrollInCourse = async (req, res) => {
-  const { courseId, studentId } = req.params;
-  try {
-    const course = await Course.findById(courseId);
-    const student = await User.findById(studentId);
-
-    if (!course || !student) {
-      return res.status(404).json({ message: "Course or student not found" });
-    }
-
-    if (course.students.includes(studentId)) {
-      return res
-        .status(400)
-        .json({ message: "Student is already enrolled in this course" });
-    }
-
-    // Enroll the student in the course
-    course.students.push(studentId);
-    await course.save();
-
-    // Add the course to the student's enrolled courses
-    student.enrolledCourses.push(courseId);
-    await student.save();
-
-    res
-      .status(200)
-      .json({ message: "Student enrolled successfully in the course" });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 module.exports = {
-  getAllCourse,
-  getCourseById,
-  createCourse,
-  updateCourse,
+  getall,
+  getByid,
+  updateOne,
+  createone,
+  deleteOne,
+  deleteall,
+  login,
   uploadImage,
-  uploadContent,
-  deleteCourseById,
-  deleteAllCourse,
-  enrollInCourse,
 };
