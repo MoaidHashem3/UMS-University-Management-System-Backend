@@ -12,6 +12,7 @@ const {
   deleteCourseById,
   deleteAllCourse,
   enrollInCourse,
+  getStudentsInCourse
 } = require("../controllers/handelCourse");
 
 app.use(express.json());
@@ -24,7 +25,7 @@ router.post('/uploadCourseImage/:id',upload.single('image'),uploadImage);
 router.post('/uploadCourseContent/:id',upload.single('pdfFile'),uploadContent);
 router.delete("/:id", deleteCourseById);
 router.delete("/", deleteAllCourse);
-
+router.get("/:courseId/students", getStudentsInCourse);
 
 
 module.exports = router;

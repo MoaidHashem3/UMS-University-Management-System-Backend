@@ -1,5 +1,6 @@
 const Course = require("../models/courseModel");
 const User = require("../models/usersModel");
+const Quiz = require("../models/quizModel")
 
 const getAllCourse = async (req, res) => {
   try {
@@ -181,6 +182,52 @@ const enrollInCourse = async (req, res)=>{
     return res.status(500).json({ message: error.message });
   }
 }
+const getStudentsInCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    
+    // Fetch the course to get the enrolled students
+    const course = await Course.findById(courseId).populate('students');
+    
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Find all students enrolled in the course
+    const enrolledStudents = await User.find(
+      { _id: { $in: course.students } },
+      "name email quizzes"
+    );
+
+    // Find all quizzes in the course
+    const quizzes = await Quiz.find({ course: courseId });
+    
+    // Fetch quiz scores for each student
+    const studentsData = await Promise.all(
+      enrolledStudents.map(async (student) => {
+        let totalScore = 0;
+
+        // Iterate through the student's quizzes and sum the total score
+        student.quizzes.forEach(quiz => {
+          totalScore += quiz.totalScore;
+        });
+
+        return {
+          name: student.name,
+          email: student.email,
+          totalScore: totalScore, // Combined total score of all quizzes
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Students data retrieved successfully",
+      data: studentsData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 
 module.exports = {
@@ -193,4 +240,5 @@ module.exports = {
   deleteCourseById,
   deleteAllCourse,
   enrollInCourse,
+  getStudentsInCourse
 };
