@@ -64,23 +64,36 @@ const createCourse = async (req, res) => {
 };
 
 const updateCourse = async (req, res) => {
-  const { id } = req.params;
-  const { quizId } = req.body; 
-  console.log(id, quizId)
+  const { title, major, professor, duration, quizId } = req.body;
+  const updates = {};
+  if (title) updates.title = title;
+  if (major) updates.major = major;
+  if (professor) updates.professor = professor;
+  if (duration) updates.duration = duration;
+
   try {
-    const updatedCourse = await Course.findByIdAndUpdate(
-      id,
-      { $push: { quizzes: quizId } }, // Adds the quizId to the quizzes array
-      { new: true } // Return the updated document
-    );
+      const update = {
+          $set: updates,
+      };
 
-    if (!updatedCourse) {
-      return res.status(404).json({ message: "Course not found" });
-    }
+      if (quizId) {
+          update.$push = { quizzes: quizId };
+      }
 
-    res.status(200).json({ message: "Course updated successfully", updatedCourse });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+      const updatedCourse = await Course.updateOne(
+          { _id: req.params.id }, 
+          update, 
+          { new: true } 
+      );
+
+      if (updatedCourse.nModified === 0) {
+          return res.status(404).json({ message: 'Course not found or no changes made.' });
+      }
+
+      res.status(200).json({ message: 'Course updated successfully', updatedCourse });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
   }
 };
 

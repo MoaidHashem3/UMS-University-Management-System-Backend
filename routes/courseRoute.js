@@ -19,7 +19,7 @@ app.use(express.json());
 router.get("/", getAllCourse);
 router.get("/:id", getCourseById);
 router.post("/", upload.single('image'),createCourse);
-router.put("/:id", updateCourse);
+router.patch("/:id", updateCourse);
 router.post("/enroll/:courseId/:studentId", enrollInCourse);
 router.post('/uploadCourseImage/:id',upload.single('image'),uploadImage);
 router.post('/uploadCourseContent/:id',upload.single('pdfFile'),uploadContent);
