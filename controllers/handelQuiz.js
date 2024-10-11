@@ -82,7 +82,7 @@ updateQuiz = async (req, res) => {
 
 retriveQuizs = async (req, res) => {
   try {
-    const retrivedQuizes = await Quiz.find();
+    const retrivedQuizes = await Quiz.find().populate("quizzes","title");
     if (!retrivedQuizes)
       return res.status(404).json({ message: "Quizes not found" });
     res
