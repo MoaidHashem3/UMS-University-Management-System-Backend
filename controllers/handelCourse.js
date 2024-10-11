@@ -4,7 +4,7 @@ const Quiz = require("../models/quizModel")
 
 const getAllCourse = async (req, res) => {
   try {
-    const courses = await Course.find().populate("quizzes").populate("students");
+    const courses = await Course.find().populate("quizzes").populate("students").populate("professor", "name");
     if (courses.length == 0) {
       return res.status(404).json({ message: "No Courses Found!" });
     }
