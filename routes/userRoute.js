@@ -11,7 +11,7 @@ router.get('/',auth,restrict("admin"),getall)
 router.get('/professor', getAllProfessors);
 router.post('/register', upload.single('image'), createone);
 router.get('/:id',getByid)
-router.patch('/:id',updateOne)
+router.patch('/:id', upload.single('image'), updateOne);
 router.delete('/:id',deleteOne)
 router.delete('/',auth,restrict("admin"),deleteall)
 router.post('/login',login)

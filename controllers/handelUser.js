@@ -34,34 +34,58 @@ const getByid = async (req, res) => {
 }
 const updateOne = async (req, res) => {
     try {
-        let { id } = req.params;
-        let {password,...newupdate} = req.body;
-        const updatedata={...newupdate}
-        if(password){
-            const hashedPassword = await bcrypt.hash(password, 10); // Hash the new password
-            updatedata.password = hashedPassword;
-        }
-        let updatedtuser = await usermodel.findByIdAndUpdate(id, updatedata , { new: true });
-        res.json({ message: "updated", data: updatedtuser })
-
-    } catch (e) {
-        res.json({ message: "not updated", error: e.message })
-    }
-}
-const createone = async (req, res) => {
-    try {
-      let newuser = req.body;
+      const { id } = req.params;
+      const { password, ...newUpdate } = req.body; // Extract other fields from req.body
+      const updateData = { ...newUpdate };
   
-      if (req.file) {
-        newuser.image = req.file.path;
+      // Handle password hashing if provided
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        updateData.password = hashedPassword;
       }
   
-      let inserteduser = await usermodel.create(newuser);
-      res.json({ message: "created", data: inserteduser });
-    } catch (err) {
-      res.json({ message: "cannot be created", error: err.message });
+      // If an image is provided, handle file upload
+      if (req.file) {
+        updateData.image = req.file.path; // Set image path from multer file upload
+      }
+  
+      // Find the user and update
+      const updatedUser = await usermodel.findByIdAndUpdate(id, updateData, { new: true });
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({ message: "Profile updated", data: updatedUser });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating profile", error: error.message });
     }
   };
+
+
+const createone = async (req, res) => {
+    try {
+        // Extract user data from the request body
+        let newuser = {
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+        };
+
+        // Check if a file was uploaded and set the image path if it exists
+        if (req.file) {
+            newuser.image = req.file.path;
+        }
+
+        // Insert the new user into the database
+        let inserteduser = await usermodel.create(newuser);
+        res.json({ message: "User created successfully", data: inserteduser });
+    } catch (err) {
+        console.error(err); // Log the error for debugging
+        res.status(400).json({ message: "User cannot be created", error: err.message });
+    }
+};
+
 
 const deleteOne =async (req, res) => {
     try {
@@ -118,6 +142,7 @@ const getAllProfessors = async (req,res) => {
         if (!isValid) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
+        const imageUrl = `${req.protocol}://${req.get('host')}/${user.image}`;
 
         const token = jwt.sign(
             {
@@ -126,7 +151,7 @@ const getAllProfessors = async (req,res) => {
                     email: user.email,
                     id: user._id,
                     role: user.role,
-                    image: user.image,
+                    image: imageUrl,
                     enrolledCourses: user.enrolledCourses,
                     createdCourses: user.createdCourses, 
                     quizzes: user.quizzes
@@ -145,7 +170,7 @@ const getAllProfessors = async (req,res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                image: user.image,
+                image: imageUrl,
                 enrolledCourses: user.enrolledCourses,
                 createdCourses: user.createdCourses, 
                 quizzes: user.quizzes
