@@ -1,9 +1,10 @@
 const Course = require("../models/courseModel");
 const User = require("../models/usersModel");
+const Quiz = require("../models/quizModel")
 
 const getAllCourse = async (req, res) => {
   try {
-    const courses = await Course.find().populate("quizzes").populate("students");
+    const courses = await Course.find().populate("quizzes").populate("students").populate("professor", "name");
     if (courses.length == 0) {
       return res.status(404).json({ message: "No Courses Found!" });
     }
@@ -42,31 +43,57 @@ const getCourseById = async (req, res) => {
 const createCourse = async (req, res) => {
   const course = req.body;
   try {
-    if(req.file){
-      course.image=req.file.path;
+    if (req.file) {
+      course.image = req.file.path;
     }
+
     const newCourse = new Course(course);
     const savedCourse = await newCourse.save();
 
+    await User.findByIdAndUpdate(
+      course.professor, 
+      { $push: { createdCourses: savedCourse._id} }, 
+      { new: true } 
+    );
+
     res.status(201).json({ message: "Course created successfully", data: savedCourse });
   } catch (err) {
+    console.error("Error creating course:", err); 
     res.status(400).json({ message: err.message });
   }
 };
 
 const updateCourse = async (req, res) => {
-  const { id } = req.params;
-  const updates = req.body;
+  const { title, major, professor, duration, quizId } = req.body;
+  const updates = {};
+  if (title) updates.title = title;
+  if (major) updates.major = major;
+  if (professor) updates.professor = professor;
+  if (duration) updates.duration = duration;
+
   try {
-    const updatedCourse = await Course.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
-    if (!updatedCourse) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-    res.status(200).json({ message: "Course updated successfully" });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+      const update = {
+          $set: updates,
+      };
+
+      if (quizId) {
+          update.$push = { quizzes: quizId };
+      }
+
+      const updatedCourse = await Course.updateOne(
+          { _id: req.params.id }, 
+          update, 
+          { new: true } 
+      );
+
+      if (updatedCourse.nModified === 0) {
+          return res.status(404).json({ message: 'Course not found or no changes made.' });
+      }
+
+      res.status(200).json({ message: 'Course updated successfully', updatedCourse });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -168,6 +195,52 @@ const enrollInCourse = async (req, res)=>{
     return res.status(500).json({ message: error.message });
   }
 }
+const getStudentsInCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    
+    // Fetch the course to get the enrolled students
+    const course = await Course.findById(courseId).populate('students');
+    
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Find all students enrolled in the course
+    const enrolledStudents = await User.find(
+      { _id: { $in: course.students } },
+      "name email quizzes"
+    );
+
+    // Find all quizzes in the course
+    const quizzes = await Quiz.find({ course: courseId });
+    
+    // Fetch quiz scores for each student
+    const studentsData = await Promise.all(
+      enrolledStudents.map(async (student) => {
+        let totalScore = 0;
+
+        // Iterate through the student's quizzes and sum the total score
+        student.quizzes.forEach(quiz => {
+          totalScore += quiz.totalScore;
+        });
+
+        return {
+          name: student.name,
+          email: student.email,
+          totalScore: totalScore, // Combined total score of all quizzes
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Students data retrieved successfully",
+      data: studentsData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 
 module.exports = {
@@ -180,4 +253,5 @@ module.exports = {
   deleteCourseById,
   deleteAllCourse,
   enrollInCourse,
+  getStudentsInCourse
 };
