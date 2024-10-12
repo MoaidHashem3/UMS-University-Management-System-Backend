@@ -70,6 +70,7 @@ const createone = async (req, res) => {
             name: req.body.name,
             email: req.body.email,
             password: req.body.password,
+            role: req.body.role
         };
 
         // Check if a file was uploaded and set the image path if it exists
