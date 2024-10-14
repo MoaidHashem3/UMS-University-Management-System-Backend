@@ -37,12 +37,12 @@ const getByid = async (req, res) => {
 const updateOne = async (req, res) => {
     try {
       const { id } = req.params;
-      const { password, ...newUpdate } = req.body; // Extract other fields from req.body
+      const { newPassword, ...newUpdate } = req.body; // Extract other fields from req.body
       const updateData = { ...newUpdate };
-  
+    
       // Handle password hashing if provided
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
+      if (newPassword) {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
         updateData.password = hashedPassword;
       }
   
@@ -63,6 +63,7 @@ const updateOne = async (req, res) => {
       res.status(500).json({ message: "Error updating profile", error: error.message });
     }
   };
+
 
 
 const createone = async (req, res) => {
@@ -302,5 +303,20 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ message: "Server error, please try again later" });
     }
 };
+  const verifyPassword = async (req, res) => {
+    const { password } = req.body;
+    console.log("password is",password)
+    try {
+      const user = await usermodel.findById(req.params.id);
+      if (!user) return res.status(404).send('User not found');
 
-module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors, forgotPassword, resetPassword }
+        const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) return res.status(401).send('passord is not valid');
+
+      res.send( isValid);
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  }
+
+module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors, forgotPassword, resetPassword,verifyPassword }
