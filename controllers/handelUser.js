@@ -204,7 +204,6 @@ const uploadImage = async (req, res) => {
 
   const forgotPassword = async (req, res) => {
     const { email } = req.body;
-    console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
@@ -237,11 +236,29 @@ const uploadImage = async (req, res) => {
             to: user.email,
             from: 'gamestorrent2015@gmail.com',
             subject: 'UMS Password Reset',
-            text: `You are receiving this because you have requested to reset the password for your account.\n\n
-                Please click on the following link, or paste it into your browser to complete the process:\n\n
-                ${resetUrl}\n\n
-                If you did not request this, please ignore this email and your password will remain unchanged.\n
-                UMS TEAM`,
+            html: `
+            <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; border-radius: 8px;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                 <h1 style="color:#808080;">UMS</h1>
+                <h2 style="color: #333333;">Password Reset Request [Valid for 1 hour]</h2>
+                    <p style="color: #555555;">Dear ${user.name},</p>
+                    <p style="color: #555555;">
+                        You are receiving this email because we received a request to reset the password for your account.
+                    </p>
+                    <p style="color: #555555;">
+                        To complete the process, please click on the link below or copy and paste it into your browser:
+                    </p>
+                    <p>
+                        <a href="${resetUrl}" style="color: #008A90; text-decoration: none; font-weight: bold;">${resetUrl}</a>
+                    </p>
+                    <p style="color: #555555;">
+                        If you did not request this change, please ignore this email. Your password will remain unchanged.
+                    </p>
+                    <p style="color: #555555;">Thank you,</p>
+                    <p style="color: #008A90; font-weight: bold;">UMS Team</p>
+                </div>
+            </div>
+        `
         };
 
         transporter.sendMail(mailOptions, (err) => {
@@ -259,7 +276,6 @@ const uploadImage = async (req, res) => {
 const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
-    console.log(password)
     if (!password) {
         return res.status(400).json({ message: "Password is required" });
     }
