@@ -1,6 +1,8 @@
 var jwt = module.require('jsonwebtoken');
 const bcrypt = module.require('bcrypt');
 const usermodel = module.require("../models/usersModel")
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 
 const getall = async (req, res) => {
@@ -199,4 +201,90 @@ const uploadImage = async (req, res) => {
       res.status(500).send(err.message);
     }
   };
-module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors }
+
+  const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS);
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
+
+    try {
+        const user = await usermodel.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const token = crypto.randomBytes(20).toString('hex');
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        const transporter = nodemailer.createTransport({
+            host: 'in.mailjet.com',
+  port: 587,
+  auth: {
+    user: process.env.MAILJET_API_KEY,
+    pass: process.env.MAILJET_API_SECRET, 
+  },
+        });
+
+        const resetUrl = `http://localhost:5173/reset-password/${token}`;
+        const mailOptions = {
+            to: user.email,
+            from: 'gamestorrent2015@gmail.com',
+            subject: 'UMS Password Reset',
+            text: `You are receiving this because you have requested to reset the password for your account.\n\n
+                Please click on the following link, or paste it into your browser to complete the process:\n\n
+                ${resetUrl}\n\n
+                If you did not request this, please ignore this email and your password will remain unchanged.\n
+                UMS TEAM`,
+        };
+
+        transporter.sendMail(mailOptions, (err) => {
+            if (err) {
+                return res.status(500).json({ message: "Error sending email", error: err.message });
+            }
+            res.status(200).json({ message: "Password reset link sent!" });
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error, please try again later" });
+    }
+
+};
+const resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+    console.log(password)
+    if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+    }
+
+    try {
+        const user = await usermodel.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }, 
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
+        }
+
+    
+        user.password = password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.status(200).json({ message: "Password successfully reset!" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error, please try again later" });
+    }
+};
+
+module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors, forgotPassword, resetPassword }

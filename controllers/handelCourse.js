@@ -184,7 +184,6 @@ const enrollInCourse = async (req, res)=>{
     // Enroll the student in the course
     course.students.push(studentId);
     await course.save();
-    
     // Add the course to the student's enrolled courses
     student.enrolledCourses.push(courseId);
     await student.save();

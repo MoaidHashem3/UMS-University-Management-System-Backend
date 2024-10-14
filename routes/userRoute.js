@@ -1,6 +1,6 @@
 const upload = require('../Middlewares/uploadConfig');
 
-const { getall, getByid, updateOne,createone,deleteOne,deleteall,login,uploadImage, getAllProfessors} = module.require("../controllers/handelUser");
+const { getall, getByid, updateOne,createone,deleteOne,deleteall,login,uploadImage, getAllProfessors, forgotPassword, resetPassword} = module.require("../controllers/handelUser");
 
 const express = module.require('express')
 const router=express.Router();
@@ -16,4 +16,6 @@ router.delete('/:id',deleteOne)
 router.delete('/',auth,restrict("admin"),deleteall)
 router.post('/login',login)
 router.post('/uploadUserImage/:id',upload.single('image'),uploadImage);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 module.exports=router;
