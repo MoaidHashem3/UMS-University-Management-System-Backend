@@ -39,19 +39,17 @@ const updateOne = async (req, res) => {
       const { id } = req.params;
       const { newPassword, ...newUpdate } = req.body; // Extract other fields from req.body
       const updateData = { ...newUpdate };
-    
+    console.log(req.body)
       // Handle password hashing if provided
       if (newPassword) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         updateData.password = hashedPassword;
       }
   
-      // If an image is provided, handle file upload
       if (req.file) {
         updateData.image = req.file.path; // Set image path from multer file upload
       }
   
-      // Find the user and update
       const updatedUser = await usermodel.findByIdAndUpdate(id, updateData, { new: true });
   
       if (!updatedUser) {
