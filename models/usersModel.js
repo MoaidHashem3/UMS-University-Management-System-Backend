@@ -43,6 +43,8 @@ const userSchema = new mongoose.Schema({
       totalScore: { type: Number, default: 0 },
     },
   ],
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
 });
 
 userSchema.pre("save", async function (next) {
