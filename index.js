@@ -6,6 +6,12 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
+const allowedOrigins = ['http://localhost:5173']; // Add your frontend URL(s) here
+app.use(cors({
+  origin: allowedOrigins,
+  methods: "*",
+  credentials: true 
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
