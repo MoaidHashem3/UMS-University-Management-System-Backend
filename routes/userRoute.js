@@ -1,6 +1,6 @@
 const upload = require('../Middlewares/uploadConfig');
 
-const { getall, getByid, updateOne,createone,deleteOne,deleteall,login,uploadImage, getAllProfessors, forgotPassword, resetPassword,verifyPassword} = module.require("../controllers/handelUser");
+const { getall, getByid, updateOne,createone,deleteOne,deleteall,login,uploadImage, getAllProfessors, forgotPassword, resetPassword,verifyPassword,getUserQuizzes} = module.require("../controllers/handelUser");
 
 const express = module.require('express')
 const router=express.Router();
@@ -9,6 +9,7 @@ const {auth,restrict}=module.require('../Middlewares/auth')
 app.use(express.json())
 router.get('/',auth,restrict("admin"),getall)
 router.get('/professor', getAllProfessors);
+router.get('/quizzes/:id', getUserQuizzes);
 router.post('/register', upload.single('image'), createone);
 router.get('/:id',getByid)
 router.patch('/:id', upload.single('image'), updateOne);
