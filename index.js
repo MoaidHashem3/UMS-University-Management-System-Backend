@@ -6,12 +6,13 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-const allowedOrigins = ['http://localhost:5173']; 
-app.use(cors({
-  origin: '*',
-  methods: "*",
-  credentials: true 
-}));
+const corsOptions = {
+  origin: '*', 
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', 
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+app.use(cors(corsOptions)); 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
