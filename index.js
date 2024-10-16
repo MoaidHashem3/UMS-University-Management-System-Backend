@@ -6,9 +6,9 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-const allowedOrigins = ['http://localhost:5173']; // Add your frontend URL(s) here
+const allowedOrigins = ['http://localhost:5173']; 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: '*',
   methods: "*",
   credentials: true 
 }));
