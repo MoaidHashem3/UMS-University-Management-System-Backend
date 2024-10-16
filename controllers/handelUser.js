@@ -317,4 +317,36 @@ const resetPassword = async (req, res) => {
     }
   }
 
-module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors, forgotPassword, resetPassword,verifyPassword }
+  const getUserQuizzes = async(req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const user = await usermodel.findById(userId).populate({
+            path: 'quizzes.quizId',         
+            select: 'title course questions', 
+            populate: {                     
+                path: 'course',
+                select: 'title'             
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const quizzes = user.quizzes.map(q => ({
+            quizTitle: q.quizId.title,                  
+            courseTitle: q.quizId.course?.title || '',  
+            score: q.totalScore ,
+            total:q.quizId.questions.length                    
+        }));
+
+        return res.json({ quizzes });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+
+};
+
+module.exports = { getall, getByid, updateOne,createone,deleteOne,deleteall,login, uploadImage,getAllProfessors, forgotPassword, resetPassword,verifyPassword,getUserQuizzes }
