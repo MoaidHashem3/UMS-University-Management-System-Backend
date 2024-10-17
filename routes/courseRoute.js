@@ -22,7 +22,7 @@ router.post("/", upload.single('image'),createCourse);
 router.patch("/:id", updateCourse);
 router.post("/enroll/:courseId/:studentId", enrollInCourse);
 router.post('/uploadCourseImage/:id',upload.single('image'),uploadImage);
-router.post('/uploadCourseContent/:id',upload.single('pdfFile'),uploadContent);
+router.post('/uploadCourseContent/:id',upload.single('file'),uploadContent);
 router.delete("/:id", deleteCourseById);
 router.delete("/", deleteAllCourse);
 router.get("/:courseId/students", getStudentsInCourse);
