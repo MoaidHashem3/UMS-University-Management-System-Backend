@@ -14,6 +14,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions)); 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Parses form data
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 let userRoute = require("./routes/userRoute.js");

@@ -144,7 +144,7 @@ const getAllProfessors = async (req,res) => {
         if (!isValid) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
-        const imageUrl = `${req.protocol}://${req.get('host')}/${user.image}`;
+        const imageUrl = user.image;
 
         const token = jwt.sign(
             {
@@ -230,7 +230,7 @@ const uploadImage = async (req, res) => {
   },
         });
 
-        const resetUrl = `http://localhost:5173/reset-password/${token}`;
+        const resetUrl = `https://ums-university-management-system-frontend.vercel.app/reset-password/${token}`;
         const mailOptions = {
             to: user.email,
             from: 'gamestorrent2015@gmail.com',

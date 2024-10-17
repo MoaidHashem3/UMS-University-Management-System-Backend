@@ -1,37 +1,40 @@
 const multer = require('multer');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-require('dotenv').config();
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 
-const ensureDirectoryExistence = (dirPath) => {
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-    }
-};
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        let uploadPath = 'uploads';
-
-        if (req.path.includes('/uploadUserImage') || req.path.includes('/register')) {
-            uploadPath = 'uploads/user_images/';
-        } else if (req.path.includes('/uploadCourseImage')) {
-            uploadPath = 'uploads/course_images/';
-        } else if (req.path.includes('/uploadCourseContent')) {
-            uploadPath = 'uploads/course_pdfs/';
-        }
-
-        // Ensure the directory exists
-        ensureDirectoryExistence(uploadPath);
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        cb(null, uuidv4() + path.extname(file.originalname));
-    }
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Configure Multer to use Cloudinary storage for images and PDFs
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    // Set default folder for images
+    let folder = 'course_images';
+    let resource_type = 'image'; // Default to image uploads
+    let format = undefined; // Format will be optional for images
+
+    // Check if the file is a PDF
+    if (file.mimetype === 'application/pdf') {
+      folder = 'course_pdfs'; // Change folder for PDFs
+      resource_type = 'raw';  // Cloudinary treats PDFs as raw files
+      format = 'pdf'; // Explicitly set format for PDFs
+    }
+
+    return {
+      folder: folder,
+      resource_type: resource_type,
+      format: format, // Optional for images but set for PDFs
+      public_id: file.originalname.split('.')[0], // Use the original name without the extension
+    };
+  },
+});
+
+// Multer config
 const upload = multer({ storage });
 
 module.exports = upload;
