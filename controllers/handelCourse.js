@@ -23,10 +23,10 @@ const getCourseById = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: "No Course Found!" });
     }
-    const imageUrl = `${req.protocol}://${req.get('host')}/${course.image}`;
+    const imageUrl = course.image;
     const contentWithFullPaths = course.content.map(item => ({
       title: item.title, 
-      filePath: `${req.protocol}://${req.get('host')}/${item.filePath.replace(/\\/g, "/")}`,
+      filePath: item.filePath,
     }));
 
     res.status(200).json({
@@ -100,45 +100,50 @@ const updateCourse = async (req, res) => {
 const uploadImage = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("Course not found");
+    if (!course) return res.status(404).json({ error: "Course not found" });
 
-    const imagePath = req.file.path.replace(/\\/g, "/"); 
+    const imageUrl = req.file.path;
+    console.log(imageUrl);
 
-    course.image = imagePath;
+    course.image = imageUrl;
     await course.save();
-
-    const imageUrl = `${req.protocol}://${req.get('host')}/${imagePath}`;
 
     res.status(200).json({ message: "Image uploaded successfully", imageUrl });
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err.message);
+    console.error(JSON.stringify(err, null, 2));  // Proper error logging
+    res.status(500).json({ error: err.message || "An unexpected error occurred" });  // Send JSON error response
   }
 };
 
 const uploadContent = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send("Course not found");
+    if (!course) return res.status(404).json({ error: "Course not found" });
 
     const { title } = req.body;
-
     if (!title) {
-      return res.status(400).send("Title is required");
+      return res.status(400).json({ error: "Title is required" });
     }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    // Cloudinary stores the file and the URL will be in req.file.path
+    const fileUrl = req.file.path;
 
     const contentItem = {
       title,
-      filePath: req.file.path.replace(/\\/g, "/"),
+      filePath: fileUrl,  // Use the exact path returned by Cloudinary
     };
 
     course.content.push(contentItem);
     await course.save();
 
-    res.status(200).send("Content uploaded and updated for course");
+    res.status(200).json({ message: "PDF uploaded successfully", fileUrl });
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err.message);
+    console.error("Error uploading PDF: ", err);
+    res.status(500).json({ error: err.message });
   }
 };
 

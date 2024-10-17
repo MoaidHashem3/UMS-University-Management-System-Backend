@@ -144,7 +144,7 @@ const getAllProfessors = async (req,res) => {
         if (!isValid) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
-        const imageUrl = `${req.protocol}://${req.get('host')}/${user.image}`;
+        const imageUrl = user.image;
 
         const token = jwt.sign(
             {
